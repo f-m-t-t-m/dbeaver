@@ -71,20 +71,9 @@ public abstract class SQLIndexManager<OBJECT_TYPE extends AbstractTableIndex, TA
         appendIndexModifiers(index, decl);
         decl.append(" INDEX ").append(indexName); //$NON-NLS-1$
         appendIndexType(index, decl);
-        decl.append(" ON ").append(tableName) //$NON-NLS-1$
-            .append(" ("); //$NON-NLS-1$
-        try {
-            // Get columns using void monitor
-            boolean firstColumn = true;
-            for (DBSTableIndexColumn indexColumn : CommonUtils.safeCollection(command.getObject().getAttributeReferences(new VoidProgressMonitor()))) {
-                if (!firstColumn) decl.append(","); //$NON-NLS-1$
-                firstColumn = false;
-                decl.append(DBUtils.getQuotedIdentifier(indexColumn));
-                appendIndexColumnModifiers(monitor, decl, indexColumn);
-            }
-        } catch (DBException e) {
-            log.error(e);
-        }
+        decl.append(" ON ").append(tableName); //$NON-NLS-1$
+        decl.append(" ("); //$NON-NLS-1$
+        appendColumns(monitor, index, decl);
         decl.append(")"); //$NON-NLS-1$
 
         actions.add(
@@ -94,6 +83,21 @@ public abstract class SQLIndexManager<OBJECT_TYPE extends AbstractTableIndex, TA
 
     protected void appendIndexType(OBJECT_TYPE index, StringBuilder decl) {
 
+    }
+    
+    protected void appendColumns(@NotNull DBRProgressMonitor monitor, OBJECT_TYPE index, StringBuilder decl) {
+        try {
+            // Get columns using void monitor
+            boolean firstColumn = true;
+            for (DBSTableIndexColumn indexColumn : CommonUtils.safeCollection(index.getAttributeReferences(new VoidProgressMonitor()))) {
+                if (!firstColumn) decl.append(","); //$NON-NLS-1$
+                firstColumn = false;
+                decl.append(DBUtils.getQuotedIdentifier(indexColumn));
+                appendIndexColumnModifiers(monitor, decl, indexColumn);
+            }
+        } catch (DBException e) {
+            log.error(e);
+        }
     }
 
     protected void appendIndexModifiers(OBJECT_TYPE index, StringBuilder decl) {

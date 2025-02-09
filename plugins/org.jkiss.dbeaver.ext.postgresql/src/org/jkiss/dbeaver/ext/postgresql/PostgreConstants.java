@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.data.DBDPseudoAttributeType;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -158,6 +159,13 @@ public class PostgreConstants {
 
     public static final String ERROR_ADMIN_SHUTDOWN = "57P01";
     public static final String ERROR_TRANSACTION_ABORTED = "25P02";
+    
+    public static final DBSIndexType INDEX_TYPE_BTREE = new DBSIndexType("BTREE", "BTree(Default)");
+    public static final DBSIndexType INDEX_TYPE_HASH = new DBSIndexType("HASH", "Hash");
+    public static final DBSIndexType INDEX_TYPE_GIST = new DBSIndexType("GiST", "GiST");
+    public static final DBSIndexType INDEX_TYPE_SP_GIST = new DBSIndexType("SPGiST", "SP-GiST");
+    public static final DBSIndexType INDEX_TYPE_GIN = new DBSIndexType("GIN", "GIN");
+    public static final DBSIndexType INDEX_TYPE_BRIN = new DBSIndexType("BRIN", "BRIN");
 
     public static final String PSQL_EXCEPTION_CLASS_NAME = "org.postgresql.util.PSQLException";
     public static final String COLLATION_DEFAULT = "default";

@@ -1099,10 +1099,22 @@ public class PostgreDatabase extends JDBCRemoteInstance
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
             throws SQLException {
-            return session.prepareStatement(
-                "SELECT am.oid,am.* FROM pg_catalog.pg_am am " +
-                    "\nORDER BY am.oid"
-            );
+            String query;
+            if (owner.getDataSource().isServerVersionAtLeast(9, 6)) {
+                query = """
+                        SELECT
+                            am.oid,
+                            am.*,
+                            pg_indexam_has_property(am.oid, 'can_order') as amcanorder,
+                            pg_indexam_has_property(am.oid, 'can_unique') as amcanunique,
+                            pg_indexam_has_property(am.oid, 'can_multi_col') as amcanmulticol
+                        FROM pg_catalog.pg_am am
+                        ORDER BY am.oid
+                        """;
+            } else {
+                query = "SELECT am.oid,am.* FROM pg_catalog.pg_am am ORDER BY am.oid";
+            }
+            return session.prepareStatement(query);
         }
 
         @Override

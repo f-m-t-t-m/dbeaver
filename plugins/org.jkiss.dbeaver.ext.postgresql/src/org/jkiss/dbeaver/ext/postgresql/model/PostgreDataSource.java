@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.cache.SimpleObjectCache;
+import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.net.DefaultCallbackHandler;
@@ -67,6 +68,13 @@ import java.time.ZoneId;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static org.jkiss.dbeaver.ext.postgresql.PostgreConstants.INDEX_TYPE_BRIN;
+import static org.jkiss.dbeaver.ext.postgresql.PostgreConstants.INDEX_TYPE_BTREE;
+import static org.jkiss.dbeaver.ext.postgresql.PostgreConstants.INDEX_TYPE_GIN;
+import static org.jkiss.dbeaver.ext.postgresql.PostgreConstants.INDEX_TYPE_GIST;
+import static org.jkiss.dbeaver.ext.postgresql.PostgreConstants.INDEX_TYPE_HASH;
+import static org.jkiss.dbeaver.ext.postgresql.PostgreConstants.INDEX_TYPE_SP_GIST;
 
 /**
  * PostgreDataSource
@@ -89,6 +97,10 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         PostgrePrivilegeType.EXECUTE,
         PostgrePrivilegeType.USAGE
     };
+    private static final List<DBSIndexType> SUPPORTED_INDEXES = List.of(
+                                                     INDEX_TYPE_BTREE, INDEX_TYPE_HASH, INDEX_TYPE_GIST,
+                                                     INDEX_TYPE_SP_GIST, INDEX_TYPE_GIN, INDEX_TYPE_BRIN
+    );
 
     private DatabaseCache databaseCache;
     private SettingCache settingCache;
@@ -748,6 +760,10 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     @NotNull
     public PostgrePrivilegeType[] getSupportedPrivilegeTypes() {
         return SUPPORTED_PRIVILEGE_TYPES;
+    }
+    
+    public List<DBSIndexType> getSupportedIndexTypes() {
+        return SUPPORTED_INDEXES;
     }
 
     @Override

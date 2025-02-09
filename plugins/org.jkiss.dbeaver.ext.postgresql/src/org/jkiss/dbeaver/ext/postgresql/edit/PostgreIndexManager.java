@@ -69,21 +69,7 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
             DBSIndexType.UNKNOWN,
             false);
     }
-
-    protected void appendIndexColumnModifiers(DBRProgressMonitor monitor, StringBuilder decl, DBSTableIndexColumn indexColumn) {
-        try {
-            final PostgreOperatorClass operatorClass = ((PostgreIndexColumn) indexColumn).getOperatorClass(monitor);
-            if (operatorClass != null) {
-                decl.append(" ").append(operatorClass.getName());
-            }
-        } catch (DBException e) {
-            log.warn(e);
-        }
-        if (!indexColumn.isAscending()) {
-            decl.append(" DESC"); //$NON-NLS-1$
-        }
-    }
-
+    
     @Override
     public void deleteObject(@NotNull DBECommandContext commandContext, @NotNull PostgreIndex object, @NotNull Map<String, Object> options) throws DBException {
         if (object.isPrimaryKeyIndex()) {
@@ -117,13 +103,46 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
             }
         }
         if (!hasDDL) {
-            super.addObjectCreateActions(monitor, executionContext, actions, command, options);
+            StringBuilder decl = new StringBuilder(40);
+            decl.append("CREATE");
+            appendIndexModifiers(index, decl);
+            decl.append(" INDEX ").append(DBUtils.getQuotedIdentifier(index.getDataSource(), index.getName()));
+            decl.append(" ON ").append(DBUtils.getEntityScriptName(index.getTable(), options));
+            appendIndexType(index, decl);
+            decl.append(" (");
+            appendColumns(monitor, index, decl);
+            decl.append(")");
+            actions.add(
+                new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_index, decl.toString())
+            );
         }
         if (!CommonUtils.isEmpty(index.getDescription())) {
             addIndexCommentAction(actions, index);
         }
     }
-
+    
+    @Override
+    protected void appendIndexType(PostgreIndex index, StringBuilder decl) {
+        DBSIndexType indexType = index.getIndexType();
+        decl.append(" USING ").append(indexType.getId());
+    }
+    
+    @Override
+    protected void appendIndexColumnModifiers(DBRProgressMonitor monitor, StringBuilder decl, DBSTableIndexColumn indexColumn) {
+        try {
+            final PostgreOperatorClass operatorClass = ((PostgreIndexColumn) indexColumn).getOperatorClass(monitor);
+            if (operatorClass != null) {
+                decl.append(" ").append(operatorClass.getName());
+            }
+        } catch (DBException e) {
+            log.warn(e);
+        }
+        if (!indexColumn.isAscending()) {
+            decl.append(" DESC"); //$NON-NLS-1$
+        }
+    }
+    
+    
     private static void addIndexCommentAction(List<DBEPersistAction> actions, PostgreIndex index) {
         actions.add(new SQLDatabasePersistAction(
             "Comment index",

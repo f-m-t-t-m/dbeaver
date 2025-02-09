@@ -70,10 +70,12 @@ public class PostgreAccessMethod extends PostgreInformation {
     }
 
     private void loadInfo(ResultSet dbResult)
-        throws SQLException
     {
         this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.name = JDBCUtils.safeGetString(dbResult, "amname");
+        this.canOrder = JDBCUtils.safeGetBoolean(dbResult, "amcanorder");
+        this.canUnique = JDBCUtils.safeGetBoolean(dbResult, "amcanunique");
+        this.canMultiCol = JDBCUtils.safeGetBoolean(dbResult, "amcanmulticol");
         if (getDataSource().isServerVersionAtLeast(9, 6)) {
             // New simpler version of pg_am
             this.handler = JDBCUtils.safeGetString(dbResult, "amhandler");
@@ -81,11 +83,8 @@ public class PostgreAccessMethod extends PostgreInformation {
         } else {
             this.operatorStrategies = JDBCUtils.safeGetInt(dbResult, "amstrategies");
             this.supportRoutines = JDBCUtils.safeGetInt(dbResult, "amsupport");
-            this.canOrder = JDBCUtils.safeGetBoolean(dbResult, "amcanorder");
             this.canOrderByOp = JDBCUtils.safeGetBoolean(dbResult, "amcanorderbyop");
             this.canBackward = JDBCUtils.safeGetBoolean(dbResult, "amcanbackward");
-            this.canUnique = JDBCUtils.safeGetBoolean(dbResult, "amcanunique");
-            this.canMultiCol = JDBCUtils.safeGetBoolean(dbResult, "amcanmulticol");
             this.optionalKey = JDBCUtils.safeGetBoolean(dbResult, "amoptionalkey");
             this.searchArray = JDBCUtils.safeGetBoolean(dbResult, "amsearcharray");
             this.searchNulls = JDBCUtils.safeGetBoolean(dbResult, "amsearchnulls");

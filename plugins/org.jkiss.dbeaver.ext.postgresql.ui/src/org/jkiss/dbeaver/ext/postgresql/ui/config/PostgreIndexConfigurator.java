@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ext.postgresql.ui.config;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreAccessMethod;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreAttribute;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreIndex;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreIndexColumn;
@@ -32,25 +34,39 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
 import org.jkiss.utils.CommonUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
  * Postgre index configurator
  */
 public class PostgreIndexConfigurator implements DBEObjectConfigurator<PostgreIndex> {
-
-
+    
+    
+    private static final Logger log = LoggerFactory.getLogger(PostgreIndexConfigurator.class);
+    
     @Override
     public PostgreIndex configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object parent, @NotNull PostgreIndex index, @NotNull Map<String, Object> options) {
         return new UITask<PostgreIndex>() {
             @Override
             protected PostgreIndex runTask() {
+                Collection<PostgreAccessMethod> accessMethods = Collections.emptyList();
+                try {
+                    accessMethods = index.getTable().getDatabase().getAccessMethods(monitor);
+                } catch (DBException e) {
+                    log.error(e.getMessage(), e);
+                }
+                System.out.println(accessMethods);
                 EditIndexPage editPage = new EditIndexPage(
                     "Edit index",
                     index,
-                    Collections.singletonList(DBSIndexType.OTHER));
+                    index.getDataSource().getSupportedIndexTypes()
+                );
                 if (!editPage.edit()) {
                     return null;
                 }
